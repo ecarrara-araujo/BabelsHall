@@ -1,50 +1,50 @@
 package br.com.ecarrara.bh;
 
-import java.io.IOException;
-import javax.servlet.AsyncContext;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import br.com.ecarrara.bh.entities.Message;
+import br.com.ecarrara.bh.infra.Display;
+import br.com.ecarrara.bh.infra.SpringWebDisplay;
+import javax.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.async.DeferredResult;
 
 /**
  *
  * @author ecarrara
  */
-@WebServlet( urlPatterns = { "/babelshall" },
-             asyncSupported = true, loadOnStartup=1 )
-public class BabelsHallController extends HttpServlet {
+@Controller
+@RequestMapping( value = "/babelshall/*", produces = { "application/json" })
+public class BabelsHallController {
     
+    @Autowired
     private BabelsHall babelsHall;
     
-    @Override
-    public void init( ServletConfig config ) throws ServletException {
-        super.init( config );
-        babelsHall = new BabelsHall();
+    @RequestMapping( value = "/register", method = RequestMethod.GET )
+    public @ResponseBody Message register( @RequestParam String name, HttpSession session) {
+        DeferredResult<Message> deferredResult = new DeferredResult<Message>();
+        Display display = new SpringWebDisplay( deferredResult );
+        return babelsHall.register( session.getId(), name, display );
     }
-    
-    @Override
-    protected void doGet( HttpServletRequest req,
-                          HttpServletResponse resp )
-            throws ServletException, IOException {      
-        
-        String action = req.getParameter( "action" );
-        String id = req.getSession(true).getId();
-        
-        if( "register".equals( action ) ) {
-            String name = req.getParameter( "name" );
-            AsyncContext ctx = req.startAsync();
-            babelsHall.register( id, name, ctx);
-        } else if( "speak".equals( action ) ) {
-            String phrase = req.getParameter( "phrase" );
-            babelsHall.speak( id, phrase );
-        } else if("leave".equals( action ) ) {
-            babelsHall.leave( id );
-        } else if( "bind".equals( action ) ) {
-            AsyncContext ctx = req.startAsync();
-            babelsHall.bind( id, ctx ); 
-        } 
+
+    @RequestMapping( value = "/leave", method = RequestMethod.GET )
+    public @ResponseBody Message leave( HttpSession session ) {
+        return babelsHall.leave( session.getId() );
+    }
+            
+    @RequestMapping( value = "/speak", method = RequestMethod.GET )
+    public @ResponseBody Message speak( @RequestParam String phrase, HttpSession session ) {
+        return babelsHall.speak( session.getId(), phrase );        
+    }
+
+    @RequestMapping( value = "/bind", method = RequestMethod.GET )
+    public @ResponseBody DeferredResult<Message> bind( HttpSession session ) {
+        DeferredResult<Message> deferredResult = new DeferredResult<Message>();
+        Display display = new SpringWebDisplay( deferredResult );        
+        babelsHall.bind( session.getId(), display );
+        return deferredResult;
     }
 }

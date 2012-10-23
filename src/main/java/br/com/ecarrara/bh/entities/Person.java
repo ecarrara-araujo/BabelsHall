@@ -1,10 +1,6 @@
 package br.com.ecarrara.bh.entities;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.util.Objects;
-import javax.servlet.AsyncContext;
-import javax.servlet.http.HttpServletResponse;
+import br.com.ecarrara.bh.infra.Display;
 
 /**
  *
@@ -14,15 +10,15 @@ public class Person {
 
     private String id;
     private String name;
-    private AsyncContext asyncContext;
+    private Display display;
     
     public Person() {
     }
     
-    public Person( String id, String name, AsyncContext ctx ) {
+    public Person( String id, String name, Display display ) {
         this.id = id;
         this.name = name;
-        this.asyncContext = ctx;
+        this.display = display;
     }
 
     public String getId() {
@@ -33,12 +29,12 @@ public class Person {
         return name;
     }
 
-    public void setAsyncContext( AsyncContext ctx ) {
-        this.asyncContext = ctx;
+    public void setDisplay( Display display ) {
+        this.display = display;
     }
 
-    public AsyncContext getAsyncContext() {
-        return asyncContext;
+    public Display getDisplay() {
+        return display;
     }
 
     @Override
@@ -55,15 +51,9 @@ public class Person {
         return hash;
     }
     
-    private static final ObjectMapper mapper = new ObjectMapper();
-    public void notify( Message message ) throws IOException {
-        if( asyncContext != null ) {
-            HttpServletResponse response = (HttpServletResponse) asyncContext.getResponse();
-            response.setContentType( "application/json" );
-            response.getWriter().write( mapper.writeValueAsString( message ) );
-            response.flushBuffer();
-            asyncContext.complete();
-            asyncContext = null;
+    public void notify( Message message ) {
+        if( display != null ) {
+            display.show( message );
         }
     }
 }

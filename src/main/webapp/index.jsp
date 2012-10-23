@@ -35,7 +35,7 @@
                 self.dialog('');
                 
                 self.bind = function() {
-                    $.getJSON("/babelshall", {action: "bind"}, function(data) {
+                    $.getJSON("/babelshall/bind", function(data) {
                         self.parseResult(data);
                     }).complete(function() {
                         self.bind();
@@ -43,20 +43,20 @@
                 }
                 
                 self.register = function() {
-                    $.getJSON("/babelshall", {action: "register", name: self.guest()}, function(data) {
+                    $.getJSON("/babelshall/register", { name: self.guest() }, function(data) {
                         self.parseResult(data);
                         self.bind();
                     });
                 }
                 
                 self.leave = function() {
-                    $.getJSON("/babelshall", {action: "leave" }, function(data) {
+                    $.getJSON("/babelshall/leave", function(data) {
                         self.parseResult(data);
                     });
                 }
 
                 self.speak = function() {
-                    $.getJSON("/babelshall", {action: "speak", phrase: self.phrase() }, function(data){
+                    $.getJSON("/babelshall/speak", { phrase: self.phrase() }, function(data){
                         self.parseResult(data);
                         self.phrase('');
                     });
